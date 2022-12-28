@@ -9,6 +9,4 @@ import lombok.Data;
 public class PolicyDetail {
     AadharPolicyEntity aadharPolicyEntity;
     Long currentIdCounter;
-
-
 }

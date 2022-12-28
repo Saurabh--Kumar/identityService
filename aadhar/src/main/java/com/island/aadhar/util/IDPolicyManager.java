@@ -6,6 +6,7 @@ import com.island.aadhar.entity.AadharPolicyEntity;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
 import java.util.HashMap;
@@ -27,8 +28,20 @@ public class IDPolicyManager {
     @PostConstruct
     private void init(){
         dbManager.init();
+        refreshPolicyDetailsMap();
+    }
+
+    public void addPolicyDetail(AadharPolicyEntity aadharPolicyEntity){
+        policyDetailsMap.put(aadharPolicyEntity.getId(), new PolicyDetail(aadharPolicyEntity,aadharPolicyEntity.getCounter()));
+    }
+
+    public void removePolicyDetail(Integer id){
+        policyDetailsMap.remove(id);
+    }
+
+    public void refreshPolicyDetailsMap(){
         List<AadharPolicyEntity> idPolicies = aadharRepository.findAll();
-        if(idPolicies == null || idPolicies.size() ==0){
+        if(idPolicies == null){
             throw new RuntimeException("Couldn't read existing counter from DB");
         }
 
@@ -43,15 +56,18 @@ public class IDPolicyManager {
         return policyDetailsMap;
     }
 
+    @Transactional(rollbackFor = Exception.class)
     public PolicyDetail getNextIdForPolicy(Integer policyId) {
         synchronized(this) {
             PolicyDetail policyDetail = policyDetailsMap.get(policyId);
             Long currentIdCounter = policyDetail.getCurrentIdCounter();
             if (currentIdCounter < policyDetail.getAadharPolicyEntity().getCounter()) {
-                policyDetail.setCurrentIdCounter(currentIdCounter++);
+                policyDetail.setCurrentIdCounter(++currentIdCounter);
             } else {
                 AadharPolicyEntity aadharPolicyEntity = dbManager.findById(policyId);
-                policyDetailsMap.put(aadharPolicyEntity.getId(), new PolicyDetail(aadharPolicyEntity,currentIdCounter));
+                aadharPolicyEntity.setCounter(aadharPolicyEntity.getCounter()+aadharPolicyEntity.getFetchSize());
+                aadharPolicyEntity = aadharRepository.save(aadharPolicyEntity);
+                policyDetailsMap.put(aadharPolicyEntity.getId(), new PolicyDetail(aadharPolicyEntity,++currentIdCounter));
             }
             return policyDetailsMap.get(policyId);
         }

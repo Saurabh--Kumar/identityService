@@ -24,6 +24,6 @@ public class DBManager {
     }
 
     public void init(){
-        aadharRepository.save(new AadharPolicyEntity(0,1000000000000000000L, 100, IDType.Sting));
+        //aadharRepository.save(new AadharPolicyEntity(1,1000000000000000000L, 100, IDType.Sting));
     }
 }
