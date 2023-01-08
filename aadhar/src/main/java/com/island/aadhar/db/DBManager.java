@@ -1,7 +1,10 @@
 package com.island.aadhar.db;
 
-import com.island.aadhar.entity.AadharPolicyEntity;
+import com.island.aadhar.entity.IDPolicyEntity;
+import com.island.aadhar.exeption.ApplicationException;
+import com.island.aadhar.util.enums.IDError;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -11,25 +14,29 @@ import java.util.Optional;
 public class DBManager {
 
     @Autowired
-    AadharRepository aadharRepository;
+    IDRepository idRepository;
 
-    public AadharPolicyEntity findById(Integer id) {
-        Optional<AadharPolicyEntity> optional = aadharRepository.findById(id);
+    public IDPolicyEntity findById(Integer id) {
+        Optional<IDPolicyEntity> optional = idRepository.findById(id);
         if(optional.isPresent()){
             return optional.get();
         }
         return null;
     }
 
-    public List<AadharPolicyEntity> findAll() {
-        return aadharRepository.findAll();
+    public List<IDPolicyEntity> findAll() {
+        return idRepository.findAll();
     }
 
-    public AadharPolicyEntity save(AadharPolicyEntity aadharPolicyEntity) {
-        return aadharRepository.save(aadharPolicyEntity);
+    public IDPolicyEntity save(IDPolicyEntity IDPolicyEntity) {
+        return idRepository.save(IDPolicyEntity);
     }
 
-    public void deleteById(Integer policyId) {
-        aadharRepository.deleteById(policyId);
+    public void deleteById(Integer policyId) throws ApplicationException {
+        try {
+            idRepository.deleteById(policyId);
+        } catch (EmptyResultDataAccessException ex) {
+            throw new ApplicationException(IDError.POLICY_ID_NOT_FOUND);
+        }
     }
 }

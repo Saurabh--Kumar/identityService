@@ -19,7 +19,7 @@ public class IDUtil {
     private List<String> characterList = CharacterSetReader.getCharacterList();
     int base = characterList.size();
 
-    private String getStringId(Long number) {
+    private String convertToStringId(Long number) {
         StringBuilder id = new StringBuilder();
 
         do{
@@ -44,7 +44,7 @@ public class IDUtil {
         } else {
             idBatchDetails.getIdRanges().stream().forEach(
                     pair -> LongStream.range(pair.getStart(), pair.getEnd()).forEach(n -> {
-                        idList.add(new StringID(getStringId(n)));
+                        idList.add(new StringID(convertToStringId(n)));
                     })
             );
         }

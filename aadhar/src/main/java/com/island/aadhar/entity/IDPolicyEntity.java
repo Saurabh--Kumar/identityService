@@ -17,11 +17,11 @@ import javax.persistence.Table;
 import java.time.LocalDateTime;
 
 @Entity
-@Table
+@Table(name = "id_policy_entity")
 @Getter
 @Setter
 @NoArgsConstructor
-public class AadharPolicyEntity {
+public class IDPolicyEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     private Integer id;
