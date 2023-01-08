@@ -1,2 +1,17 @@
-package com.island.aadhar.domain;public class IDPolicyResponse {
+package com.island.aadhar.domain;
+
+import lombok.Data;
+
+@Data
+public class IDPolicyResponse extends AbstractResponse{
+    private Integer policyId;
+
+    public IDPolicyResponse(StatusResponse statusResponse){
+        super(statusResponse);
+    }
+
+    public IDPolicyResponse(StatusResponse statusResponse, Integer policyId){
+        super(statusResponse);
+        this.policyId = policyId;
+    }
 }
