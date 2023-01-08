@@ -1,7 +1,9 @@
 package com.island.aadhar.controller;
 
 import com.island.aadhar.domain.ID;
-import com.island.aadhar.domain.StringID;
+import com.island.aadhar.domain.IDResponse;
+import com.island.aadhar.domain.StatusResponse;
+import com.island.aadhar.domain.StatusType;
 import com.island.aadhar.manager.IdentityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -12,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.Collections;
 import java.util.List;
 
 @RestController
@@ -23,17 +24,16 @@ public class IdentityController {
     private IdentityManager idManager;
 
     @GetMapping(value = "/getId/{policyId}")
-    public ResponseEntity<List<ID>> getId(@PathVariable Integer policyId,
-                                          @RequestParam(required = false) Long batchSize){
+    public ResponseEntity<IDResponse> getId(@PathVariable Integer policyId,
+                                          @RequestParam(required = false, defaultValue = "1") Long batchSize){
         try{
-            if(batchSize == null){
-                batchSize = 1L;
-            }
-            List<ID> id = idManager.getId(policyId, batchSize);
-            return ResponseEntity.ok(id);
+            List<ID> idList = idManager.getId(policyId, batchSize);
+            return ResponseEntity.ok(
+                    new IDResponse(new StatusResponse(101, StatusType.SUCCESS, "SUCCESS"),idList)
+            );
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Collections.emptyList());
+                    .body(new IDResponse(new StatusResponse(501, StatusType.ERROR, ex.getMessage())));
         }
     }
 }
