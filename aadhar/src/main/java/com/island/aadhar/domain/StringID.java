@@ -8,8 +8,8 @@ import lombok.NoArgsConstructor;
 public class StringID extends ID{
     private String id;
 
-    public StringID(String id, String type){
-        super(type);
+    public StringID(String id){
+        super();
         this.id = id;
     }
 }

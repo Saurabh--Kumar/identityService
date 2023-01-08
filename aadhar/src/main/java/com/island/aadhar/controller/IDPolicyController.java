@@ -1,9 +1,9 @@
 package com.island.aadhar.controller;
 
-import com.island.aadhar.db.AadharRepository;
-import com.island.aadhar.domain.IDPolicyResponse;
-import com.island.aadhar.domain.StatusResponse;
-import com.island.aadhar.domain.StatusType;
+import com.island.aadhar.db.DBManager;
+import com.island.aadhar.domain.response.IDPolicyResponse;
+import com.island.aadhar.domain.response.StatusResponse;
+import com.island.aadhar.domain.response.StatusType;
 import com.island.aadhar.entity.AadharPolicyEntity;
 import com.island.aadhar.util.IDPolicyManager;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,7 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class IDPolicyController {
 
     @Autowired
-    private AadharRepository aadharRepository;
+    private DBManager dbManager;
 
     @Autowired
     private IDPolicyManager idPolicyManager;
@@ -29,7 +29,7 @@ public class IDPolicyController {
     @PostMapping(value = "/create")
     public ResponseEntity<IDPolicyResponse> createPolicy(@RequestBody AadharPolicyEntity aadharPolicyEntity){
         try{
-            AadharPolicyEntity aadharPolicy = aadharRepository.save(aadharPolicyEntity);
+            AadharPolicyEntity aadharPolicy = dbManager.save(aadharPolicyEntity);
             idPolicyManager.addPolicyDetail(aadharPolicy);
             return ResponseEntity.ok(
                     new IDPolicyResponse(new StatusResponse(101, StatusType.SUCCESS, "SUCCESS"), aadharPolicy.getId())
@@ -47,7 +47,7 @@ public class IDPolicyController {
     @DeleteMapping(value = "/delete/{policyId}")
     public ResponseEntity<IDPolicyResponse> deletePolicy(@PathVariable Integer policyId){
         try{
-            aadharRepository.deleteById(policyId);
+            dbManager.deleteById(policyId);
             idPolicyManager.removePolicyDetail(policyId);
             return ResponseEntity.ok(
                     new IDPolicyResponse(new StatusResponse(101, StatusType.SUCCESS, "SUCCESS"), policyId)

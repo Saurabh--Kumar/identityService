@@ -1,4 +1,4 @@
-package com.island.aadhar.domain;
+package com.island.aadhar.domain.response;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

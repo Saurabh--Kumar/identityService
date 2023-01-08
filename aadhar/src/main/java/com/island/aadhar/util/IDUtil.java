@@ -4,7 +4,7 @@ import com.island.aadhar.domain.ID;
 import com.island.aadhar.domain.LongID;
 import com.island.aadhar.domain.StringID;
 import com.island.aadhar.util.enums.IDType;
-import com.island.aadhar.util.pojo.IDRangeDetails;
+import com.island.aadhar.util.pojo.IDBatchDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
@@ -32,19 +32,19 @@ public class IDUtil {
 
     }
 
-    public List<ID> getIdFromPolicyDetails(IDRangeDetails idRangeDetails) {
+    public List<ID> generateIDBatchFromBatchDetails(IDBatchDetails idBatchDetails) {
 
         List<ID> idList = new ArrayList<>();
-        if(IDType.Long.equals(idRangeDetails.getIdType())) {
-            idRangeDetails.getIdRanges().stream().forEach(
+        if(IDType.Long.equals(idBatchDetails.getIdType())) {
+            idBatchDetails.getIdRanges().stream().forEach(
                     pair -> LongStream.range(pair.getStart(), pair.getEnd()).forEach(n -> {
-                        idList.add(new LongID(n,IDType.Long.name()));
+                        idList.add(new LongID(n));
                     })
             );
         } else {
-            idRangeDetails.getIdRanges().stream().forEach(
+            idBatchDetails.getIdRanges().stream().forEach(
                     pair -> LongStream.range(pair.getStart(), pair.getEnd()).forEach(n -> {
-                        idList.add(new StringID(getStringId(n),IDType.String.name()));
+                        idList.add(new StringID(getStringId(n)));
                     })
             );
         }

@@ -4,12 +4,11 @@ import com.island.aadhar.entity.AadharPolicyEntity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
 import java.util.Optional;
 
 @Component
 public class DBManager {
-
-    private int batchSize = 50;
 
     @Autowired
     AadharRepository aadharRepository;
@@ -22,7 +21,15 @@ public class DBManager {
         return null;
     }
 
-    public void init(){
-        //aadharRepository.save(new AadharPolicyEntity(1,1000000000000000000L, 100, IDType.Sting));
+    public List<AadharPolicyEntity> findAll() {
+        return aadharRepository.findAll();
+    }
+
+    public AadharPolicyEntity save(AadharPolicyEntity aadharPolicyEntity) {
+        return aadharRepository.save(aadharPolicyEntity);
+    }
+
+    public void deleteById(Integer policyId) {
+        aadharRepository.deleteById(policyId);
     }
 }
