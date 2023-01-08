@@ -1,11 +1,9 @@
 package com.island.aadhar.entity;
 
-import com.island.aadhar.util.IDType;
+import com.island.aadhar.util.enums.IDType;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import lombok.Setter;
-import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
@@ -36,6 +34,8 @@ public class AadharPolicyEntity {
 
     @Column(nullable = false)
     private IDType idType;
+
+    private String description;
 
     @CreationTimestamp
     private LocalDateTime createdOn;

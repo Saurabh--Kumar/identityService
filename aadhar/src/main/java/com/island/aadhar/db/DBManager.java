@@ -1,7 +1,6 @@
 package com.island.aadhar.db;
 
 import com.island.aadhar.entity.AadharPolicyEntity;
-import com.island.aadhar.util.IDType;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 

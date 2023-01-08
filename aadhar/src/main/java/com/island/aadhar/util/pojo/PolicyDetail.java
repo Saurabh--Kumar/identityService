@@ -1,4 +1,4 @@
-package com.island.aadhar.util;
+package com.island.aadhar.util.pojo;
 
 import com.island.aadhar.entity.AadharPolicyEntity;
 import lombok.AllArgsConstructor;
