@@ -4,7 +4,9 @@ import com.island.aadhar.domain.ID;
 import com.island.aadhar.domain.response.IDResponse;
 import com.island.aadhar.domain.response.StatusResponse;
 import com.island.aadhar.domain.response.StatusType;
+import com.island.aadhar.exeption.ApplicationException;
 import com.island.aadhar.manager.IdentityManager;
+import com.island.aadhar.util.enums.IDSuccessCodes;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -29,11 +31,14 @@ public class IdentityController {
         try{
             List<ID> idList = idManager.getIdBatchForPolicy(policyId, batchSize);
             return ResponseEntity.ok(
-                    new IDResponse(new StatusResponse(101, StatusType.SUCCESS, "SUCCESS"),idList)
+                    new IDResponse(new StatusResponse(IDSuccessCodes.GET_ID_SUCCESS.getSuccessCode(), StatusType.SUCCESS, "SUCCESS"),idList)
             );
+        } catch (ApplicationException ex) {
+            return ResponseEntity.status(ex.getHttpStatus())
+                    .body(new IDResponse(new StatusResponse(ex.getErrorCode(), StatusType.ERROR, ex.getMessage())));
         } catch (Exception ex) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(new IDResponse(new StatusResponse(501, StatusType.ERROR, ex.getMessage())));
+                    .body(new IDResponse(new StatusResponse(000, StatusType.ERROR, ex.getMessage())));
         }
     }
 }

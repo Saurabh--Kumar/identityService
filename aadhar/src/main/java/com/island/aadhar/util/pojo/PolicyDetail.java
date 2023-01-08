@@ -1,12 +1,12 @@
 package com.island.aadhar.util.pojo;
 
-import com.island.aadhar.entity.AadharPolicyEntity;
+import com.island.aadhar.entity.IDPolicyEntity;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
 public class PolicyDetail {
-    AadharPolicyEntity aadharPolicyEntity;
+    IDPolicyEntity IDPolicyEntity;
     Long currentIdCounter;
 }

@@ -1,10 +1,13 @@
 package com.island.aadhar.util.enums;
 
+import lombok.Getter;
+
+@Getter
 public enum IDType {
     String("String"),
     Long("Long");
 
-    public final String type;
+    private final String type;
 
     IDType(String type) {
         this.type = type;

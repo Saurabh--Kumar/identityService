@@ -1,7 +1,9 @@
 package com.island.aadhar.util;
 
 import com.island.aadhar.db.DBManager;
-import com.island.aadhar.entity.AadharPolicyEntity;
+import com.island.aadhar.entity.IDPolicyEntity;
+import com.island.aadhar.exeption.ApplicationException;
+import com.island.aadhar.util.enums.IDError;
 import com.island.aadhar.util.pojo.IDBatchDetails;
 import com.island.aadhar.util.pojo.Pair;
 import com.island.aadhar.util.pojo.PolicyDetail;
@@ -30,16 +32,19 @@ public class IDPolicyManager {
         refreshPolicyDetailsMap();
     }
 
-    public void addPolicyDetail(AadharPolicyEntity aadharPolicyEntity){
-        policyDetailsMap.put(aadharPolicyEntity.getId(), new PolicyDetail(aadharPolicyEntity,aadharPolicyEntity.getCounter()));
+    public void addPolicyDetail(IDPolicyEntity IDPolicyEntity){
+        policyDetailsMap.put(IDPolicyEntity.getId(), new PolicyDetail(IDPolicyEntity, IDPolicyEntity.getCounter()));
     }
 
-    public void removePolicyDetail(Integer id){
+    public void removePolicyDetail(Integer id) throws ApplicationException{
+        if(!policyDetailsMap.containsKey(id)){
+            throw new ApplicationException(IDError.POLICY_ID_NOT_FOUND);
+        }
         policyDetailsMap.remove(id);
     }
 
     public void refreshPolicyDetailsMap(){
-        List<AadharPolicyEntity> idPolicies = dbManager.findAll();
+        List<IDPolicyEntity> idPolicies = dbManager.findAll();
         if(idPolicies == null){
             throw new RuntimeException("Couldn't read existing counter from DB");
         }
@@ -47,10 +52,10 @@ public class IDPolicyManager {
         policyDetailsMap = getPolicyDetailsMap(idPolicies);
     }
 
-    private Map<Integer, PolicyDetail> getPolicyDetailsMap(List<AadharPolicyEntity> idPolicies) {
+    private Map<Integer, PolicyDetail> getPolicyDetailsMap(List<IDPolicyEntity> idPolicies) {
         Map<Integer, PolicyDetail> policyDetailsMap = new HashMap<>();
-        for (AadharPolicyEntity aadharPolicyEntity : idPolicies) {
-            policyDetailsMap.put(aadharPolicyEntity.getId(), new PolicyDetail(aadharPolicyEntity,aadharPolicyEntity.getCounter()));
+        for (IDPolicyEntity IDPolicyEntity : idPolicies) {
+            policyDetailsMap.put(IDPolicyEntity.getId(), new PolicyDetail(IDPolicyEntity, IDPolicyEntity.getCounter()));
         }
         return policyDetailsMap;
     }
@@ -63,17 +68,17 @@ public class IDPolicyManager {
 
             while(batchSize > 0){
                 PolicyDetail policyDetail = policyDetailsMap.get(policyId);
-                idBatchDetails.setIdType(policyDetail.getAadharPolicyEntity().getIdType());
+                idBatchDetails.setIdType(policyDetail.getIDPolicyEntity().getIdType());
                 Long currentIdCounter = policyDetail.getCurrentIdCounter();
-                if (currentIdCounter+batchSize < policyDetail.getAadharPolicyEntity().getCounter()) {
+                if (currentIdCounter+batchSize < policyDetail.getIDPolicyEntity().getCounter()) {
                     setIDRangeDetails(idBatchDetails, new Pair(currentIdCounter, currentIdCounter+batchSize));
                     policyDetail.setCurrentIdCounter(currentIdCounter+batchSize);
                     batchSize = 0L;
                 } else {
                     //policyEntityCounter is inclusive
-                    Long foundIds = policyDetail.getAadharPolicyEntity().getCounter() - currentIdCounter+1;
+                    Long foundIds = policyDetail.getIDPolicyEntity().getCounter() - currentIdCounter+1;
                     setIDRangeDetails(idBatchDetails, new Pair(currentIdCounter, currentIdCounter+foundIds));
-                    fetchNewSetOfIds(policyId, policyDetail.getAadharPolicyEntity().getCounter() + 1);
+                    fetchNewSetOfIds(policyId, policyDetail.getIDPolicyEntity().getCounter() + 1);
                     batchSize -= foundIds;
                 }
             }
@@ -83,10 +88,10 @@ public class IDPolicyManager {
     }
 
     private PolicyDetail fetchNewSetOfIds(Integer policyId, long counter) {
-        AadharPolicyEntity aadharPolicyEntity = dbManager.findById(policyId);
-        aadharPolicyEntity.setCounter(aadharPolicyEntity.getCounter()+aadharPolicyEntity.getFetchSize());
-        aadharPolicyEntity = dbManager.save(aadharPolicyEntity);
-        policyDetailsMap.put(aadharPolicyEntity.getId(), new PolicyDetail(aadharPolicyEntity,counter));
+        IDPolicyEntity IDPolicyEntity = dbManager.findById(policyId);
+        IDPolicyEntity.setCounter(IDPolicyEntity.getCounter()+ IDPolicyEntity.getFetchSize());
+        IDPolicyEntity = dbManager.save(IDPolicyEntity);
+        policyDetailsMap.put(IDPolicyEntity.getId(), new PolicyDetail(IDPolicyEntity,counter));
         return policyDetailsMap.get(policyId);
     }
 
