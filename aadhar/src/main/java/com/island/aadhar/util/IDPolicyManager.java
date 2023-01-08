@@ -3,12 +3,16 @@ package com.island.aadhar.util;
 import com.island.aadhar.db.AadharRepository;
 import com.island.aadhar.db.DBManager;
 import com.island.aadhar.entity.AadharPolicyEntity;
+import com.island.aadhar.util.pojo.IDRangeDetails;
+import com.island.aadhar.util.pojo.Pair;
+import com.island.aadhar.util.pojo.PolicyDetail;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -57,19 +61,44 @@ public class IDPolicyManager {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public PolicyDetail getNextIdForPolicy(Integer policyId) {
+    public IDRangeDetails getNextIdForPolicy(Integer policyId, Long batchSize) {
+        IDRangeDetails idRangeDetails= new IDRangeDetails();
+
         synchronized(this) {
-            PolicyDetail policyDetail = policyDetailsMap.get(policyId);
-            Long currentIdCounter = policyDetail.getCurrentIdCounter();
-            if (currentIdCounter < policyDetail.getAadharPolicyEntity().getCounter()) {
-                policyDetail.setCurrentIdCounter(++currentIdCounter);
-            } else {
-                AadharPolicyEntity aadharPolicyEntity = dbManager.findById(policyId);
-                aadharPolicyEntity.setCounter(aadharPolicyEntity.getCounter()+aadharPolicyEntity.getFetchSize());
-                aadharPolicyEntity = aadharRepository.save(aadharPolicyEntity);
-                policyDetailsMap.put(aadharPolicyEntity.getId(), new PolicyDetail(aadharPolicyEntity,++currentIdCounter));
+
+            while(batchSize > 0){
+                PolicyDetail policyDetail = policyDetailsMap.get(policyId);
+                idRangeDetails.setIdType(policyDetail.getAadharPolicyEntity().getIdType());
+                Long currentIdCounter = policyDetail.getCurrentIdCounter();
+                if (currentIdCounter+batchSize < policyDetail.getAadharPolicyEntity().getCounter()) {
+                    setIDRangeDetails(idRangeDetails, new Pair(currentIdCounter, currentIdCounter+batchSize));
+                    policyDetail.setCurrentIdCounter(currentIdCounter+batchSize);
+                    batchSize = 0L;
+                } else {
+                    //policyEntityCounter is inclusive
+                    Long foundIds = policyDetail.getAadharPolicyEntity().getCounter() - currentIdCounter+1;
+                    setIDRangeDetails(idRangeDetails, new Pair(currentIdCounter, currentIdCounter+foundIds));
+                    fetchNewSetOfIds(policyId, policyDetail.getAadharPolicyEntity().getCounter() + 1);
+                    batchSize -= foundIds;
+                }
             }
-            return policyDetailsMap.get(policyId);
         }
+
+        return idRangeDetails;
+    }
+
+    private PolicyDetail fetchNewSetOfIds(Integer policyId, long counter) {
+        AadharPolicyEntity aadharPolicyEntity = dbManager.findById(policyId);
+        aadharPolicyEntity.setCounter(aadharPolicyEntity.getCounter()+aadharPolicyEntity.getFetchSize());
+        aadharPolicyEntity = aadharRepository.save(aadharPolicyEntity);
+        policyDetailsMap.put(aadharPolicyEntity.getId(), new PolicyDetail(aadharPolicyEntity,counter));
+        return policyDetailsMap.get(policyId);
+    }
+
+    private void setIDRangeDetails(IDRangeDetails idRangeDetails, Pair pair){
+        if(idRangeDetails.getIdRanges() == null){
+            idRangeDetails.setIdRanges(new ArrayList<>());
+        }
+        idRangeDetails.getIdRanges().add(pair);
     }
 }

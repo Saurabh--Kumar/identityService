@@ -1,9 +1,16 @@
 package com.island.aadhar.util;
 
+import com.island.aadhar.domain.ID;
+import com.island.aadhar.domain.LongID;
+import com.island.aadhar.domain.StringID;
+import com.island.aadhar.util.enums.IDType;
+import com.island.aadhar.util.pojo.IDRangeDetails;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.LongStream;
 
 @Component
 @Slf4j
@@ -25,11 +32,24 @@ public class IDUtil {
 
     }
 
-    public String getIdFromPolicyDetails(PolicyDetail policyDetail) {
-        if(IDType.Integer.equals(policyDetail.getAadharPolicyEntity().getIdType())){
-            return String.valueOf(policyDetail.getCurrentIdCounter());
+    public List<ID> getIdFromPolicyDetails(IDRangeDetails idRangeDetails) {
+
+        List<ID> idList = new ArrayList<>();
+        if(IDType.Long.equals(idRangeDetails.getIdType())) {
+            idRangeDetails.getIdRanges().stream().forEach(
+                    pair -> LongStream.range(pair.getStart(), pair.getEnd()).forEach(n -> {
+                        idList.add(new LongID(n,IDType.Long.name()));
+                    })
+            );
         } else {
-            return getStringId(policyDetail.getCurrentIdCounter());
+            idRangeDetails.getIdRanges().stream().forEach(
+                    pair -> LongStream.range(pair.getStart(), pair.getEnd()).forEach(n -> {
+                        idList.add(new StringID(getStringId(n),IDType.String.name()));
+                    })
+            );
         }
+
+        return idList;
     }
+
 }

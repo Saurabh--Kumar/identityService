@@ -1,8 +1,8 @@
-package com.island.aadhar.util;
+package com.island.aadhar.util.enums;
 
 public enum IDType {
     String("String"),
-    Integer("Integer");
+    Long("Long");
 
     public final String type;
 
