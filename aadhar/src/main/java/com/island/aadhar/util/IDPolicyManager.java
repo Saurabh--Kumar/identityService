@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.PostConstruct;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -65,29 +65,26 @@ public class IDPolicyManager {
         IDRangeDetails idRangeDetails= new IDRangeDetails();
 
         synchronized(this) {
-            PolicyDetail policyDetail = policyDetailsMap.get(policyId);
-            idRangeDetails.setIdType(policyDetail.getAadharPolicyEntity().getIdType());
-            Long currentIdCounter = policyDetail.getCurrentIdCounter();
-            if (currentIdCounter+batchSize < policyDetail.getAadharPolicyEntity().getCounter()) {
-                idRangeDetails.setIdRanges(Collections.singletonList(new Pair(currentIdCounter, currentIdCounter+batchSize)));
-                policyDetail.setCurrentIdCounter(currentIdCounter+batchSize);
-            } else {
-                while(batchSize > 0){
-                    if(currentIdCounter >= policyDetail.getAadharPolicyEntity().getCounter()){
-                        policyDetail = fetchNewSetOfIds(policyId, policyDetail.getAadharPolicyEntity().getCounter()+1);
-                    } else {
-                        idRangeDetails.setIdRanges(Collections.singletonList(new Pair(currentIdCounter, policyDetail.getAadharPolicyEntity().getCounter())));
-                        Long foundIds = policyDetail.getAadharPolicyEntity().getCounter() - currentIdCounter;
-                        idRangeDetails.setIdRanges(Collections.singletonList(new Pair(currentIdCounter, currentIdCounter + foundIds)));
-                        policyDetail = fetchNewSetOfIds(policyId, policyDetail.getAadharPolicyEntity().getCounter() + 1);
-                        currentIdCounter = policyDetail.getAadharPolicyEntity().getCounter();
-                        batchSize -= foundIds;
-                    }
-                }
 
+            while(batchSize > 0){
+                PolicyDetail policyDetail = policyDetailsMap.get(policyId);
+                idRangeDetails.setIdType(policyDetail.getAadharPolicyEntity().getIdType());
+                Long currentIdCounter = policyDetail.getCurrentIdCounter();
+                if (currentIdCounter+batchSize < policyDetail.getAadharPolicyEntity().getCounter()) {
+                    setIDRangeDetails(idRangeDetails, new Pair(currentIdCounter, currentIdCounter+batchSize));
+                    policyDetail.setCurrentIdCounter(currentIdCounter+batchSize);
+                    batchSize = 0L;
+                } else {
+                    //policyEntityCounter is inclusive
+                    Long foundIds = policyDetail.getAadharPolicyEntity().getCounter() - currentIdCounter+1;
+                    setIDRangeDetails(idRangeDetails, new Pair(currentIdCounter, currentIdCounter+foundIds));
+                    fetchNewSetOfIds(policyId, policyDetail.getAadharPolicyEntity().getCounter() + 1);
+                    batchSize -= foundIds;
+                }
             }
-            return idRangeDetails;
         }
+
+        return idRangeDetails;
     }
 
     private PolicyDetail fetchNewSetOfIds(Integer policyId, long counter) {
@@ -96,5 +93,12 @@ public class IDPolicyManager {
         aadharPolicyEntity = aadharRepository.save(aadharPolicyEntity);
         policyDetailsMap.put(aadharPolicyEntity.getId(), new PolicyDetail(aadharPolicyEntity,counter));
         return policyDetailsMap.get(policyId);
+    }
+
+    private void setIDRangeDetails(IDRangeDetails idRangeDetails, Pair pair){
+        if(idRangeDetails.getIdRanges() == null){
+            idRangeDetails.setIdRanges(new ArrayList<>());
+        }
+        idRangeDetails.getIdRanges().add(pair);
     }
 }

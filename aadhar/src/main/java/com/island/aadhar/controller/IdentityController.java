@@ -23,8 +23,8 @@ public class IdentityController {
     private IdentityManager idManager;
 
     @GetMapping(value = "/getId/{policyId}")
-    public ResponseEntity<List<ID>> getStringId(@PathVariable Integer policyId,
-                                                      @RequestParam(required = false) Long batchSize){
+    public ResponseEntity<List<ID>> getId(@PathVariable Integer policyId,
+                                          @RequestParam(required = false) Long batchSize){
         try{
             if(batchSize == null){
                 batchSize = 1L;
