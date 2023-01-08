@@ -10,7 +10,7 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class IDRangeDetails {
+public class IDBatchDetails {
     List<Pair> idRanges;
     IDType idType;
 }

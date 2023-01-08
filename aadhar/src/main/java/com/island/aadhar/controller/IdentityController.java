@@ -1,9 +1,9 @@
 package com.island.aadhar.controller;
 
 import com.island.aadhar.domain.ID;
-import com.island.aadhar.domain.IDResponse;
-import com.island.aadhar.domain.StatusResponse;
-import com.island.aadhar.domain.StatusType;
+import com.island.aadhar.domain.response.IDResponse;
+import com.island.aadhar.domain.response.StatusResponse;
+import com.island.aadhar.domain.response.StatusType;
 import com.island.aadhar.manager.IdentityManager;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -27,7 +27,7 @@ public class IdentityController {
     public ResponseEntity<IDResponse> getId(@PathVariable Integer policyId,
                                           @RequestParam(required = false, defaultValue = "1") Long batchSize){
         try{
-            List<ID> idList = idManager.getId(policyId, batchSize);
+            List<ID> idList = idManager.getIdBatchForPolicy(policyId, batchSize);
             return ResponseEntity.ok(
                     new IDResponse(new StatusResponse(101, StatusType.SUCCESS, "SUCCESS"),idList)
             );

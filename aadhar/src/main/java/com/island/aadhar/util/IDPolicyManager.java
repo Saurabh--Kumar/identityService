@@ -1,9 +1,8 @@
 package com.island.aadhar.util;
 
-import com.island.aadhar.db.AadharRepository;
 import com.island.aadhar.db.DBManager;
 import com.island.aadhar.entity.AadharPolicyEntity;
-import com.island.aadhar.util.pojo.IDRangeDetails;
+import com.island.aadhar.util.pojo.IDBatchDetails;
 import com.island.aadhar.util.pojo.Pair;
 import com.island.aadhar.util.pojo.PolicyDetail;
 import lombok.extern.slf4j.Slf4j;
@@ -23,15 +22,11 @@ public class IDPolicyManager {
 
     private Map<Integer, PolicyDetail> policyDetailsMap;
 
-
     @Autowired
     private DBManager dbManager;
-    @Autowired
-    private AadharRepository aadharRepository;
 
     @PostConstruct
     private void init(){
-        dbManager.init();
         refreshPolicyDetailsMap();
     }
 
@@ -44,7 +39,7 @@ public class IDPolicyManager {
     }
 
     public void refreshPolicyDetailsMap(){
-        List<AadharPolicyEntity> idPolicies = aadharRepository.findAll();
+        List<AadharPolicyEntity> idPolicies = dbManager.findAll();
         if(idPolicies == null){
             throw new RuntimeException("Couldn't read existing counter from DB");
         }
@@ -61,44 +56,44 @@ public class IDPolicyManager {
     }
 
     @Transactional(rollbackFor = Exception.class)
-    public IDRangeDetails getNextIdForPolicy(Integer policyId, Long batchSize) {
-        IDRangeDetails idRangeDetails= new IDRangeDetails();
+    public IDBatchDetails getIDBatchDetailsForPolicy(Integer policyId, Long batchSize) {
+        IDBatchDetails idBatchDetails = new IDBatchDetails();
 
         synchronized(this) {
 
             while(batchSize > 0){
                 PolicyDetail policyDetail = policyDetailsMap.get(policyId);
-                idRangeDetails.setIdType(policyDetail.getAadharPolicyEntity().getIdType());
+                idBatchDetails.setIdType(policyDetail.getAadharPolicyEntity().getIdType());
                 Long currentIdCounter = policyDetail.getCurrentIdCounter();
                 if (currentIdCounter+batchSize < policyDetail.getAadharPolicyEntity().getCounter()) {
-                    setIDRangeDetails(idRangeDetails, new Pair(currentIdCounter, currentIdCounter+batchSize));
+                    setIDRangeDetails(idBatchDetails, new Pair(currentIdCounter, currentIdCounter+batchSize));
                     policyDetail.setCurrentIdCounter(currentIdCounter+batchSize);
                     batchSize = 0L;
                 } else {
                     //policyEntityCounter is inclusive
                     Long foundIds = policyDetail.getAadharPolicyEntity().getCounter() - currentIdCounter+1;
-                    setIDRangeDetails(idRangeDetails, new Pair(currentIdCounter, currentIdCounter+foundIds));
+                    setIDRangeDetails(idBatchDetails, new Pair(currentIdCounter, currentIdCounter+foundIds));
                     fetchNewSetOfIds(policyId, policyDetail.getAadharPolicyEntity().getCounter() + 1);
                     batchSize -= foundIds;
                 }
             }
         }
 
-        return idRangeDetails;
+        return idBatchDetails;
     }
 
     private PolicyDetail fetchNewSetOfIds(Integer policyId, long counter) {
         AadharPolicyEntity aadharPolicyEntity = dbManager.findById(policyId);
         aadharPolicyEntity.setCounter(aadharPolicyEntity.getCounter()+aadharPolicyEntity.getFetchSize());
-        aadharPolicyEntity = aadharRepository.save(aadharPolicyEntity);
+        aadharPolicyEntity = dbManager.save(aadharPolicyEntity);
         policyDetailsMap.put(aadharPolicyEntity.getId(), new PolicyDetail(aadharPolicyEntity,counter));
         return policyDetailsMap.get(policyId);
     }
 
-    private void setIDRangeDetails(IDRangeDetails idRangeDetails, Pair pair){
-        if(idRangeDetails.getIdRanges() == null){
-            idRangeDetails.setIdRanges(new ArrayList<>());
+    private void setIDRangeDetails(IDBatchDetails idBatchDetails, Pair pair){
+        if(idBatchDetails.getIdRanges() == null){
+            idBatchDetails.setIdRanges(new ArrayList<>());
         }
-        idRangeDetails.getIdRanges().add(pair);
+        idBatchDetails.getIdRanges().add(pair);
     }
 }

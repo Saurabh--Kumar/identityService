@@ -1,6 +1,6 @@
-package com.island.aadhar.domain;
+package com.island.aadhar.domain.response;
 
-import lombok.AllArgsConstructor;
+import com.island.aadhar.domain.ID;
 import lombok.Data;
 
 import java.util.List;
