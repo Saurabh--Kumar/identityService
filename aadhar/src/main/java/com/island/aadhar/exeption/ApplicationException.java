@@ -13,6 +13,7 @@ public class ApplicationException extends Exception{
     HttpStatus httpStatus;
 
     public ApplicationException (IDError idError) {
+        super();
         this.errorCode = idError.getErrorCode();
         this.httpStatus = idError.getHttpStatus();
         this.message = idError.getErrorMessage();

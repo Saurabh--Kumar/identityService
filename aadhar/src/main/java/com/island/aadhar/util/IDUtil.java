@@ -38,13 +38,13 @@ public class IDUtil {
         if(IDType.Long.equals(idBatchDetails.getIdType())) {
             idBatchDetails.getIdRanges().stream().forEach(
                     pair -> LongStream.range(pair.getStart(), pair.getEnd()).forEach(n -> {
-                        idList.add(new LongID(n));
+                        idList.add(new LongID(n, IDType.Long.getType()));
                     })
             );
         } else {
             idBatchDetails.getIdRanges().stream().forEach(
                     pair -> LongStream.range(pair.getStart(), pair.getEnd()).forEach(n -> {
-                        idList.add(new StringID(convertToStringId(n)));
+                        idList.add(new StringID(convertToStringId(n), IDType.String.getType()));
                     })
             );
         }

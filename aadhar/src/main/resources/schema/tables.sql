@@ -1,14 +1,16 @@
-create table id_policy_entity (
-                                  id integer not null,
-                                  counter bigint not null,
-                                  created_on datetime,
-                                  description varchar(255),
-                                  fetch_size integer not null,
-                                  id_type integer not null,
-                                  last_modified_on datetime,
-                                  primary key (id)
-) engine=MyISAM;
+CREATE TABLE `id_policy_entity` (
+                                    `id` int(11) NOT NULL,
+                                    `counter` bigint(20) NOT NULL,
+                                    `created_on` datetime DEFAULT NULL,
+                                    `description` varchar(255) DEFAULT NULL,
+                                    `fetch_size` int(11) NOT NULL,
+                                    `id_type` int(11) NOT NULL,
+                                    `last_modified_on` datetime DEFAULT NULL,
+                                    PRIMARY KEY (`id`)
+);
 
 create table hibernate_sequence (
     next_val bigint
-) engine=MyISAM;
+);
+
+insert into hibernate_sequence values ( 1 );

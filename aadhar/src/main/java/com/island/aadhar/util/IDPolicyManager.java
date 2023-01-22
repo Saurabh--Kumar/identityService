@@ -60,12 +60,10 @@ public class IDPolicyManager {
         return policyDetailsMap;
     }
 
-    @Transactional(rollbackFor = Exception.class)
     public IDBatchDetails getIDBatchDetailsForPolicy(Integer policyId, Long batchSize) {
         IDBatchDetails idBatchDetails = new IDBatchDetails();
 
         synchronized(this) {
-
             while(batchSize > 0){
                 PolicyDetail policyDetail = policyDetailsMap.get(policyId);
                 idBatchDetails.setIdType(policyDetail.getIDPolicyEntity().getIdType());
@@ -75,7 +73,6 @@ public class IDPolicyManager {
                     policyDetail.setCurrentIdCounter(currentIdCounter+batchSize);
                     batchSize = 0L;
                 } else {
-                    //policyEntityCounter is inclusive
                     Long foundIds = policyDetail.getIDPolicyEntity().getCounter() - currentIdCounter+1;
                     setIDRangeDetails(idBatchDetails, new Pair(currentIdCounter, currentIdCounter+foundIds));
                     fetchNewSetOfIds(policyId, policyDetail.getIDPolicyEntity().getCounter() + 1);
@@ -87,7 +84,8 @@ public class IDPolicyManager {
         return idBatchDetails;
     }
 
-    private PolicyDetail fetchNewSetOfIds(Integer policyId, long counter) {
+    @Transactional(rollbackFor = Exception.class)
+    public PolicyDetail fetchNewSetOfIds(Integer policyId, long counter) {
         IDPolicyEntity IDPolicyEntity = dbManager.findById(policyId);
         IDPolicyEntity.setCounter(IDPolicyEntity.getCounter()+ IDPolicyEntity.getFetchSize());
         IDPolicyEntity = dbManager.save(IDPolicyEntity);
